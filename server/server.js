@@ -67,6 +67,12 @@ app.use('/api/notifications', notificationRoutes);
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
+// Redirect root to the frontend so visiting the API URL directly works
+app.get('/', (req, res) => {
+  const clientUrl = process.env.CLIENT_URL || 'https://stock-haven-client.onrender.com';
+  res.redirect(302, clientUrl);
+});
+
 // Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
