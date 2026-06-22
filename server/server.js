@@ -17,9 +17,21 @@ const app = express();
 // Security headers
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
-// CORS
+// CORS — allow local dev + any configured CLIENT_URL + *.onrender.com
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true); // server-to-server / curl
+    if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.onrender.com')) {
+      return cb(null, true);
+    }
+    cb(new Error(`CORS blocked: ${origin}`));
+  },
   credentials: true,
 }));
 

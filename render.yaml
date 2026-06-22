@@ -1,0 +1,44 @@
+services:
+  # ── Backend API ────────────────────────────────────────────────────────────
+  - type: web
+    name: stock-haven-api
+    env: node
+    region: frankfurt
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: VAPID_EMAIL
+        value: mailto:aaronjalarge@gmail.com
+      - key: VAPID_PUBLIC_KEY
+        value: BMCrpsvLCo0S4AeIImV8M5bb_SVokny93_G87uDVo5TPLjdukN-mnAWSo4UNK1sf26ybgtrvzSYAnq9Ge01zUs4
+      # The keys below must be set manually in the Render dashboard:
+      # DATABASE_URL, JWT_SECRET, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
+      # VAPID_PRIVATE_KEY, CLIENT_URL
+
+  # ── Frontend Static Site ───────────────────────────────────────────────────
+  - type: static
+    name: stock-haven-client
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      # Set this in the Render dashboard to your stock-haven-api URL:
+      # VITE_API_URL=https://stock-haven-api.onrender.com
+      # VITE_STRIPE_PUBLISHABLE_KEY=pk_live_...
